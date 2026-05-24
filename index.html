@@ -804,6 +804,123 @@ h1 .gold,
   }
 }
 
+
+    .card-media{margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,215,120,.35);background:linear-gradient(180deg,rgba(10,10,16,.9),rgba(17,12,7,.92));box-shadow:0 18px 40px rgba(0,0,0,.35),0 0 24px rgba(255,208,96,.08);} 
+    .card-media img{display:block;width:100%;height:auto;}
+    .card-media .caption{padding:10px 14px;font-size:12px;line-height:1.7;color:#d9c79c;background:linear-gradient(180deg,rgba(14,18,30,.96),rgba(10,10,14,.96));border-top:1px solid rgba(255,215,120,.18);} 
+    .card-media .tag{display:inline-block;margin-bottom:8px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,215,120,.35);background:rgba(255,215,120,.08);color:#ffd36a;font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+    .card .mini-note{margin-top:10px;font-size:12px;color:#cbb88a;line-height:1.8;}
+    @media (max-width: 768px){
+      .card-media{margin-top:14px;border-radius:14px;}
+      .card-media .caption{font-size:11px;padding:9px 12px;}
+      .card .mini-note{font-size:11px;}
+    }
+
+
+/* V7 stronger sales design + image slots */
+.impact-strip {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.impact-item {
+  border: 1px solid rgba(255,215,120,.24);
+  background: linear-gradient(180deg, rgba(255,215,120,.08), rgba(255,255,255,.025));
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 16px 36px rgba(0,0,0,.22);
+}
+.impact-item b {
+  display: block;
+  color: #ffe7a1;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.impact-item span {
+  color: #d2c4a4;
+  font-size: 12px;
+}
+.sales-frame {
+  position: relative;
+  border: 1px solid rgba(255,215,120,.32);
+  border-radius: 28px;
+  padding: 34px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255,215,120,.14), transparent 38%),
+    linear-gradient(180deg, rgba(16,18,27,.94), rgba(5,6,10,.97));
+  box-shadow: 0 32px 80px rgba(0,0,0,.36), 0 0 60px rgba(255,208,96,.08);
+  overflow: hidden;
+}
+.sales-frame:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, transparent 0%, transparent 40%, rgba(255,242,190,.10) 50%, transparent 60%, transparent 100%);
+  transform: translateX(-120%);
+  animation: salesSweep 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes salesSweep {
+  0%, 30% { transform: translateX(-120%); }
+  70%, 100% { transform: translateX(120%); }
+}
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.usecase {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.035);
+  border-radius: 20px;
+  padding: 20px;
+}
+.usecase h3 {
+  margin: 0 0 8px;
+  color: #ffe7a1;
+}
+.usecase p {
+  margin: 0;
+  color: #d5cbbb;
+  font-size: 14px;
+}
+.image-guide {
+  border: 1px solid rgba(143,217,232,.22);
+  background: rgba(143,217,232,.045);
+  border-radius: 18px;
+  padding: 18px;
+  color: #d8edf3;
+  font-size: 13px;
+}
+.card-media img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+}
+@media (max-width: 900px) {
+  .impact-strip,
+  .usecase-grid {
+    grid-template-columns: 1fr;
+  }
+  .sales-frame {
+    padding: 24px 18px;
+    border-radius: 22px;
+  }
+}
+@media (max-width: 640px) {
+  .impact-item {
+    padding: 14px;
+  }
+  .impact-item b {
+    font-size: 16px;
+  }
+  .card-media img {
+    aspect-ratio: 16 / 10;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -845,6 +962,12 @@ h1 .gold,
             <span class="badge">TP3常時表示</span>
             <span class="badge">pipsレビュー</span>
           </div>
+          <div class="impact-strip reveal">
+            <div class="impact-item"><b>出口の迷いを可視化</b><span>参考SL/TPで、保有後の判断を整理</span></div>
+            <div class="impact-item"><b>pipsで振り返る</b><span>最終結果・最大到達・最大逆行を確認</span></div>
+            <div class="impact-item"><b>高級パネル設計</b><span>MT5上で映える黒金UI</span></div>
+          </div>
+
         </div>
 
         <div class="device reveal-right luxury-sweep" aria-label="EXIT NAVI panel mockup">
@@ -880,14 +1003,29 @@ h1 .gold,
           <div class="card">
             <h3>参考SLを自動表示</h3>
             <p>エントリー後、TP方向に対してどこを割る・抜けるとシナリオが崩れやすいかを参考SLとして表示します。</p>
+            <div class="mini-note">BUY時は下側、SELL時は上側に、<b>構造が否定されやすい価格帯</b>を視覚的に整理できます。</div>
+            <div class="card-media">
+              <img src="assets/exit-navi-sl.jpg" alt="EXIT NAVI 参考SL自動表示イメージ" loading="lazy">
+              <div class="caption"><span class="tag">Reference SL</span><br>ポジション保有後に、シナリオ崩れの目安となる参考SLを自動表示。感覚ではなく、出口判断の基準として使いやすい見せ方です。</div>
+            </div>
           </div>
           <div class="card">
             <h3>TP1 / TP2 / TP3</h3>
             <p>TP1は近い利確候補、TP2は根拠が重なりやすい本命候補、TP3は伸長候補として表示します。</p>
+            <div class="mini-note">TP2を中心に、<b>フィボナッチ・ATR・水平線などの根拠が重なる価格</b>を基準化。TP1とTP3はその前後の取りやすい候補として整理します。</div>
+            <div class="card-media">
+              <img src="assets/exit-navi-tp.jpg" alt="EXIT NAVI TP1 TP2 TP3表示イメージ" loading="lazy">
+              <div class="caption"><span class="tag">TP1 / TP2 / TP3</span><br>利確候補を1本ではなく複数段階で表示。短期決済・標準決済・伸長候補を見比べながら、裁量に合わせた出口設計ができます。</div>
+            </div>
           </div>
           <div class="card">
             <h3>決済後レビュー</h3>
             <p>最終結果、最大到達、最大逆行、参考SL距離をpipsで振り返り、次のトレード改善につなげます。</p>
+            <div class="mini-note">レビューは金額ではなく<b>エントリー位置基準のpips</b>で確認。ブローカー差やロット差に左右されにくく、振り返りしやすい形式です。</div>
+            <div class="card-media">
+              <img src="assets/exit-navi-review.jpg" alt="EXIT NAVI 決済後レビューイメージ" loading="lazy">
+              <div class="caption"><span class="tag">Trade Review</span><br>最終結果 / 最大到達 / 最大逆行 / 参考SL距離をレビュー表示。トレード後の改善材料を、その場で確認できます。</div>
+            </div>
           </div>
         </div>
       </div>
@@ -956,6 +1094,55 @@ h1 .gold,
       </div>
     </section>
     <div class="premium-divider"></div>
+
+
+    <section class="section">
+      <div class="wrap">
+        <div class="sales-frame reveal luxury-sweep">
+          <div class="kicker">WHY EXIT NAVI</div>
+          <h2>エントリー後に崩れるトレードを、出口から整える。</h2>
+          <p class="lead">
+            多くのトレードは、エントリーよりも「利確を早めすぎた」「損切りを遅らせた」「ロットを重くしすぎた」
+            という出口判断で崩れます。EXIT NAVIは、保有中の判断材料をチャート上に集約し、裁量トレーダーの迷いを減らすための出口管理パネルです。
+          </p>
+          <div class="usecase-grid">
+            <div class="usecase">
+              <h3>利確判断を段階化</h3>
+              <p>TP1・TP2・TP3で、短期利確、本命利確、伸長候補を分けて確認できます。</p>
+            </div>
+            <div class="usecase">
+              <h3>損切り判断を明確化</h3>
+              <p>参考SLを表示することで、どこを超えたらシナリオが崩れやすいかを確認できます。</p>
+            </div>
+            <div class="usecase">
+              <h3>ロット圧力を確認</h3>
+              <p>ポジションが重くなりすぎていないかを、保有中に見直しやすくなります。</p>
+            </div>
+            <div class="usecase">
+              <h3>決済後に改善</h3>
+              <p>最終結果、最大到達、最大逆行をpipsで振り返り、次回の出口判断に活かせます。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-title reveal">
+          <h2>画像を差し替える場合</h2>
+          <p class="sub">GitHubに画像を入れて使う場合は、HTML内の画像パスに合わせて assets フォルダへアップロードしてください。</p>
+        </div>
+        <div class="image-guide reveal">
+          <strong>使用する画像ファイル名</strong><br>
+          1. <code>assets/exit-navi-sl.jpg</code>：参考SLを自動表示の画像<br>
+          2. <code>assets/exit-navi-tp.jpg</code>：TP1 / TP2 / TP3の画像<br>
+          3. <code>assets/exit-navi-review.jpg</code>：決済後レビューの画像<br><br>
+          推奨サイズは横長 1600×900px または 1280×720px、形式は JPG がおすすめです。
+        </div>
+      </div>
+    </section>
 
     <section id="package" class="section">
       <div class="wrap">
