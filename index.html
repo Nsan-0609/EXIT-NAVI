@@ -1,1 +1,1032 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXIT NAVI | MT5 Exit Management Indicator</title>
+<meta name="description" content="EXIT NAVIは、MT5上で参考SL/TP・ロット圧力・決済後レビューを表示する出口管理インジケーターです。">
+<style>
 
+:root {
+  --bg: #050508;
+  --bg2: #090b10;
+  --ink: #f6f1e6;
+  --text: #ece7dc;
+  --soft: #c9c0ad;
+  --muted: #9c9487;
+  --gold: #c9a95d;
+  --gold2: #f4d992;
+  --gold3: #8b7139;
+  --champagne: #fff3c9;
+  --line: rgba(201, 169, 93, .34);
+  --line2: rgba(255, 243, 201, .12);
+  --panel: rgba(11, 13, 18, .92);
+  --panel2: rgba(17, 20, 28, .92);
+  --panel3: rgba(24, 25, 29, .84);
+  --cyan: #8fd9e8;
+  --green: #9ee8b8;
+  --red: #ff8d8d;
+  --shadow: rgba(0, 0, 0, .48);
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: "Meiryo UI", Meiryo, "Hiragino Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background:
+    radial-gradient(circle at 15% -5%, rgba(201,169,93,.22), transparent 32%),
+    radial-gradient(circle at 88% 6%, rgba(244,217,146,.10), transparent 26%),
+    radial-gradient(circle at 50% 105%, rgba(143,113,57,.18), transparent 30%),
+    linear-gradient(145deg, #040407 0%, #080a0f 42%, #040406 100%);
+  line-height: 1.9;
+  letter-spacing: .01em;
+}
+body:before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: radial-gradient(circle at center, black, transparent 78%);
+  opacity: .20;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+.wrap {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+}
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  background: rgba(5,5,8,.78);
+  border-bottom: 1px solid rgba(201,169,93,.20);
+}
+.nav-inner {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 900;
+  letter-spacing: .10em;
+  color: var(--champagne);
+}
+.mark {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(244,217,146,.60);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(244,217,146,.22), rgba(201,169,93,.08)),
+    #0b0d12;
+  display: grid;
+  place-items: center;
+  color: var(--gold2);
+  box-shadow: 0 0 22px rgba(201,169,93,.18), inset 0 0 12px rgba(255,243,201,.04);
+}
+.nav-links {
+  display: flex;
+  gap: 22px;
+  color: var(--soft);
+  font-size: 13px;
+}
+.nav-links a:hover {
+  color: var(--gold2);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px 23px;
+  border-radius: 999px;
+  border: 1px solid rgba(244,217,146,.66);
+  background:
+    linear-gradient(180deg, rgba(255,243,201,.96), rgba(201,169,93,.92) 48%, rgba(151,119,55,.98));
+  color: #14110a;
+  font-weight: 900;
+  box-shadow: 0 16px 36px rgba(201,169,93,.20), inset 0 1px 0 rgba(255,255,255,.55);
+  transition: .22s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 48px rgba(201,169,93,.30), inset 0 1px 0 rgba(255,255,255,.65);
+}
+.btn.ghost {
+  color: var(--gold2);
+  background: rgba(255,255,255,.035);
+  border-color: rgba(244,217,146,.34);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
+}
+.hero {
+  position: relative;
+  padding: 92px 0 66px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.06fr .94fr;
+  gap: 42px;
+  align-items: center;
+}
+.kicker {
+  color: var(--gold2);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 16px 0 20px;
+  font-size: clamp(39px, 5.4vw, 70px);
+  line-height: 1.07;
+  letter-spacing: -.045em;
+  color: var(--ink);
+}
+.gold {
+  color: var(--gold2);
+  text-shadow: 0 0 28px rgba(201,169,93,.28);
+}
+.lead {
+  color: #e6dfd1;
+  font-size: 18px;
+  max-width: 700px;
+  line-height: 1.95;
+}
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+.trust-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.badge {
+  border: 1px solid rgba(244,217,146,.18);
+  background: rgba(255,255,255,.04);
+  color: #d1c8b7;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12px;
+}
+.device {
+  border: 1px solid rgba(244,217,146,.34);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.075), transparent),
+    linear-gradient(135deg, rgba(16,18,24,.97), rgba(6,7,10,.98));
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.035) inset,
+    0 34px 78px var(--shadow),
+    0 0 55px rgba(201,169,93,.12);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.device:before {
+  content:"";
+  position:absolute;
+  inset:-34% -10% auto;
+  height:180px;
+  background: radial-gradient(circle, rgba(244,217,146,.16), transparent 66%);
+  transform: rotate(-10deg);
+}
+.panel {
+  position: relative;
+  border: 1px solid rgba(244,217,146,.24);
+  border-radius: 22px;
+  background: rgba(5,7,10,.90);
+  overflow: hidden;
+}
+.panel-head {
+  padding: 19px 21px;
+  border-bottom: 1px solid rgba(201,169,93,.24);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.status {
+  color: var(--gold2);
+  border: 1px solid rgba(244,217,146,.36);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 11px;
+  background: rgba(201,169,93,.08);
+}
+.panel-body {
+  padding: 18px 21px 24px;
+}
+.line {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  font-size: 13px;
+}
+.line span:first-child {
+  color: var(--muted);
+}
+.line strong {
+  color: var(--text);
+  font-weight: 700;
+}
+.price {
+  color: var(--gold2);
+}
+.section {
+  padding: 72px 0;
+}
+.section-title {
+  max-width: 840px;
+  margin-bottom: 32px;
+}
+h2 {
+  font-size: clamp(29px, 4vw, 45px);
+  line-height: 1.22;
+  margin: 0 0 15px;
+  letter-spacing: -.035em;
+  color: var(--ink);
+}
+.sub {
+  color: var(--soft);
+  font-size: 16px;
+  line-height: 1.9;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.card {
+  border: 1px solid rgba(255,255,255,.08);
+  border-left: 4px solid var(--gold);
+  background:
+    linear-gradient(180deg, rgba(24,25,29,.90), rgba(9,11,16,.94));
+  border-radius: 20px;
+  padding: 24px;
+  min-height: 220px;
+  box-shadow: 0 18px 42px rgba(0,0,0,.23), inset 0 1px 0 rgba(255,255,255,.035);
+}
+.card h3 {
+  color: var(--gold2);
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+.card p {
+  color: #cfc7b8;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.feature-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.feature {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.035);
+  border-radius: 18px;
+  padding: 19px 20px;
+  color: #d8d0c1;
+}
+.feature b {
+  color: var(--gold2);
+}
+.compare {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgba(8,10,14,.74);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 18px 40px rgba(0,0,0,.18);
+}
+.compare th, .compare td {
+  padding: 17px 18px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  vertical-align: top;
+}
+.compare th {
+  color: var(--gold2);
+  background: rgba(201,169,93,.14);
+  font-weight: 900;
+}
+.compare td {
+  color: #e1d9ca;
+}
+.flow {
+  counter-reset: step;
+  display: grid;
+  gap: 15px;
+}
+.flow-item {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 19px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.flow-item:before {
+  content: counter(step);
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: linear-gradient(180deg, var(--gold2), var(--gold));
+  color: #111;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+.cta {
+  border: 1px solid rgba(244,217,146,.43);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(201,169,93,.18), transparent 34%),
+    linear-gradient(180deg, rgba(19,22,30,.96), rgba(7,8,12,.98));
+  padding: 46px;
+  text-align: center;
+  box-shadow: 0 34px 78px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.cta h2 {
+  color: var(--gold2);
+}
+.note {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 18px;
+}
+.footer {
+  color: rgba(201,192,173,.68);
+  font-size: 12px;
+  text-align: center;
+  padding: 34px 0 50px;
+}
+@media (max-width: 900px) {
+  .hero-grid, .cards, .feature-list {
+    grid-template-columns: 1fr;
+  }
+  .nav-links {
+    display: none;
+  }
+  .wrap {
+    width: min(100% - 28px, 1120px);
+  }
+  .hero {
+    padding-top: 58px;
+  }
+  .cta {
+    padding: 30px 22px;
+  }
+  .line {
+    grid-template-columns: 110px 1fr;
+  }
+}
+
+
+/* v3 mobile optimization */
+@media (max-width: 640px) {
+  body {
+    line-height: 1.82;
+  }
+  .nav-inner {
+    height: 62px;
+  }
+  .brand {
+    font-size: 13px;
+  }
+  .mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+  .btn {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  .nav .btn {
+    width: auto;
+    padding: 10px 13px;
+    font-size: 12px;
+  }
+  .hero {
+    padding: 42px 0 34px;
+  }
+  h1 {
+    font-size: 36px;
+    letter-spacing: -.04em;
+  }
+  h2 {
+    font-size: 28px;
+  }
+  .lead {
+    font-size: 15px;
+    line-height: 1.9;
+  }
+  .device {
+    padding: 14px;
+    border-radius: 22px;
+  }
+  .panel {
+    border-radius: 18px;
+  }
+  .panel-head {
+    padding: 15px 16px;
+  }
+  .panel-body {
+    padding: 14px 16px 18px;
+  }
+  .line {
+    grid-template-columns: 92px 1fr;
+    gap: 9px;
+    font-size: 12px;
+    padding: 9px 0;
+  }
+  .section {
+    padding: 46px 0;
+  }
+  .section-title {
+    margin-bottom: 22px;
+  }
+  .card {
+    min-height: auto;
+    padding: 19px;
+    border-radius: 18px;
+  }
+  .feature {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .compare {
+    display: block;
+    overflow-x: auto;
+    border-radius: 16px;
+  }
+  .compare th, .compare td {
+    padding: 13px;
+    min-width: 140px;
+    font-size: 13px;
+  }
+  .flow-item {
+    grid-template-columns: 40px 1fr;
+    padding: 16px;
+  }
+  .flow-item:before {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+  .cta {
+    border-radius: 22px;
+  }
+  .trust-row {
+    gap: 8px;
+  }
+  .badge {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
+
+/* Luxury scroll motion */
+.reveal {
+  opacity: 0;
+  transform: translateY(34px) scale(.985);
+  filter: blur(8px);
+  transition:
+    opacity .9s cubic-bezier(.16,1,.3,1),
+    transform .9s cubic-bezier(.16,1,.3,1),
+    filter .9s cubic-bezier(.16,1,.3,1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-34px);
+  filter: blur(7px);
+  transition:
+    opacity .95s cubic-bezier(.16,1,.3,1),
+    transform .95s cubic-bezier(.16,1,.3,1),
+    filter .95s cubic-bezier(.16,1,.3,1);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(34px);
+  filter: blur(7px);
+  transition:
+    opacity .95s cubic-bezier(.16,1,.3,1),
+    transform .95s cubic-bezier(.16,1,.3,1),
+    filter .95s cubic-bezier(.16,1,.3,1);
+}
+.reveal-left.is-visible,
+.reveal-right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+  filter: blur(0);
+}
+.card, .feature, .flow-item, .compare, .cta, .device {
+  will-change: transform, opacity;
+}
+.card:hover,
+.feature:hover {
+  transform: translateY(-4px);
+  border-color: rgba(244,217,146,.34);
+  box-shadow: 0 24px 52px rgba(0,0,0,.30), 0 0 34px rgba(201,169,93,.08);
+}
+.card,
+.feature {
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+.luxury-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.luxury-sweep:after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -80%;
+  width: 42%;
+  height: 220%;
+  background: linear-gradient(90deg, transparent, rgba(255,243,201,.14), transparent);
+  transform: rotate(18deg);
+  transition: left 1.2s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+}
+.luxury-sweep.is-visible:after {
+  left: 120%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+  .luxury-sweep:after {
+    display: none;
+  }
+}
+
+
+/* V5 exaggerated luxury effects */
+body {
+  overflow-x: hidden;
+}
+.luxury-bg-orb {
+  position: fixed;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(18px);
+  opacity: .34;
+  background: radial-gradient(circle, rgba(244,217,146,.22), rgba(201,169,93,.08), transparent 68%);
+  animation: orbFloat 10s ease-in-out infinite alternate;
+}
+.luxury-bg-orb.orb1 { left: -120px; top: 110px; }
+.luxury-bg-orb.orb2 { right: -130px; top: 520px; animation-delay: -3s; background: radial-gradient(circle, rgba(255,243,201,.20), rgba(99,220,255,.06), transparent 70%); }
+.luxury-bg-orb.orb3 { left: 34%; bottom: -160px; animation-delay: -6s; opacity: .22; }
+
+@keyframes orbFloat {
+  0% { transform: translate3d(0,0,0) scale(1); }
+  100% { transform: translate3d(36px,-44px,0) scale(1.16); }
+}
+h1 .gold,
+.cta h2,
+.brand span {
+  background: linear-gradient(90deg, #b88a34, #fff2bc, #d4ad5f, #fff7d0, #a97724);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: goldShine 5.5s ease-in-out infinite;
+}
+@keyframes goldShine {
+  0%,100% { background-position: 0% 50%; filter: drop-shadow(0 0 10px rgba(201,169,93,.18)); }
+  50% { background-position: 100% 50%; filter: drop-shadow(0 0 24px rgba(244,217,146,.34)); }
+}
+.device {
+  animation: premiumFloat 6s ease-in-out infinite;
+}
+@keyframes premiumFloat {
+  0%,100% { transform: translateY(0) rotateX(0deg); }
+  50% { transform: translateY(-12px) rotateX(1.5deg); }
+}
+.panel {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,243,201,.06),
+    0 0 36px rgba(201,169,93,.12),
+    0 0 80px rgba(244,217,146,.08);
+}
+.panel:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0%, transparent 38%, rgba(255,243,201,.10) 45%, transparent 52%, transparent 100%);
+  transform: translateX(-110%);
+  animation: panelSweep 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes panelSweep {
+  0%, 28% { transform: translateX(-110%); }
+  58%, 100% { transform: translateX(110%); }
+}
+.status {
+  animation: statusPulse 1.8s ease-in-out infinite;
+}
+@keyframes statusPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(244,217,146,0); }
+  50% { box-shadow: 0 0 18px rgba(244,217,146,.38); }
+}
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+.btn:after {
+  content:"";
+  position:absolute;
+  top:-80%;
+  left:-60%;
+  width:40%;
+  height:260%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.58), transparent);
+  transform: rotate(20deg);
+  animation: buttonShine 3.4s ease-in-out infinite;
+}
+@keyframes buttonShine {
+  0%,35% { left:-70%; }
+  70%,100% { left:130%; }
+}
+.reveal {
+  transform: translateY(52px) scale(.965);
+  filter: blur(14px);
+  transition:
+    opacity 1.05s cubic-bezier(.12,1,.22,1),
+    transform 1.05s cubic-bezier(.12,1,.22,1),
+    filter 1.05s cubic-bezier(.12,1,.22,1);
+}
+.reveal-left {
+  transform: translateX(-70px) scale(.975);
+  filter: blur(12px);
+}
+.reveal-right {
+  transform: translateX(70px) scale(.975);
+  filter: blur(12px);
+}
+.card,
+.feature,
+.flow-item,
+.compare,
+.cta {
+  position: relative;
+  overflow: hidden;
+}
+.card:after,
+.feature:after,
+.flow-item:after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(circle at 10% 0%, rgba(255,243,201,.10), transparent 38%);
+  opacity:0;
+  transition: opacity .35s ease;
+  pointer-events:none;
+}
+.card:hover:after,
+.feature:hover:after,
+.flow-item:hover:after {
+  opacity:1;
+}
+.card:hover,
+.feature:hover,
+.flow-item:hover {
+  transform: translateY(-8px) scale(1.012);
+  border-color: rgba(244,217,146,.48);
+  box-shadow:
+    0 30px 70px rgba(0,0,0,.36),
+    0 0 42px rgba(201,169,93,.12),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+.kicker {
+  text-shadow: 0 0 18px rgba(244,217,146,.28);
+}
+.hero:after {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-1px;
+  height:1px;
+  background: linear-gradient(90deg, transparent, rgba(244,217,146,.60), transparent);
+  box-shadow: 0 0 24px rgba(244,217,146,.34);
+}
+.compare th {
+  text-shadow: 0 0 16px rgba(244,217,146,.22);
+}
+.cta {
+  box-shadow:
+    0 40px 90px rgba(0,0,0,.48),
+    0 0 80px rgba(201,169,93,.14),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  animation: ctaGlow 4s ease-in-out infinite;
+}
+@keyframes ctaGlow {
+  0%,100% { border-color: rgba(244,217,146,.42); }
+  50% { border-color: rgba(255,243,201,.70); }
+}
+.premium-divider {
+  width: min(780px, 86%);
+  height: 1px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, rgba(244,217,146,.72), transparent);
+  box-shadow: 0 0 26px rgba(244,217,146,.30);
+}
+@media (max-width: 640px) {
+  .luxury-bg-orb {
+    width: 220px;
+    height: 220px;
+    opacity: .22;
+  }
+  .device {
+    animation: none;
+  }
+  .reveal {
+    transform: translateY(30px) scale(.985);
+    filter: blur(7px);
+  }
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(30px) scale(.985);
+    filter: blur(7px);
+  }
+  .card:hover,
+  .feature:hover,
+  .flow-item:hover {
+    transform: none;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="luxury-bg-orb orb1"></div>
+  <div class="luxury-bg-orb orb2"></div>
+  <div class="luxury-bg-orb orb3"></div>
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <div class="brand"><div class="mark">E</div><span>EXIT NAVI</span></div>
+      <div class="nav-links">
+        <a href="#concept">Concept</a>
+        <a href="#features">Features</a>
+        <a href="#style">Style</a>
+        <a href="#package">Package</a>
+      </div>
+      <a class="btn" href="https://www.gogojungle.co.jp/tools/indicators/80170?utm_source=share" target="_blank" rel="noopener">GogoJungleで確認</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="kicker">MT5 EXIT MANAGEMENT INDICATOR</div>
+          <h1>エントリー後の迷いを、<br><span class="gold">出口管理</span>で支配する。</h1>
+          <p class="lead">
+            EXIT NAVIは、MT5上で参考SL/TP・ロット圧力・決済後レビューを美しく可視化する、
+            裁量トレーダー向けの出口管理インジケーターです。
+            「どこで逃げるか」「どこまで伸ばすか」「ロットが重くなっていないか」を、チャート上で整理します。
+          </p>
+          <div class="hero-actions">
+            <a class="btn" href="https://www.gogojungle.co.jp/tools/indicators/80170?utm_source=share" target="_blank" rel="noopener">商品ページを見る</a>
+            <a class="btn ghost" href="#package">セット内容を見る</a>
+          </div>
+          <div class="trust-row">
+            <span class="badge">MT5専用</span>
+            <span class="badge">参考SL/TP</span>
+            <span class="badge">Scalping / Day / Swing</span>
+            <span class="badge">TP3常時表示</span>
+            <span class="badge">pipsレビュー</span>
+          </div>
+        </div>
+
+        <div class="device reveal-right luxury-sweep" aria-label="EXIT NAVI panel mockup">
+          <div class="panel">
+            <div class="panel-head">
+              <strong>EXIT NAVI</strong>
+              <span class="status">分析中</span>
+            </div>
+            <div class="panel-body">
+              <div class="line"><span>スタイル</span><strong>Day / Gold Theme</strong></div>
+              <div class="line"><span>参考SL</span><strong class="price">構造的な否定位置</strong></div>
+              <div class="line"><span>TP1</span><strong>近い利確候補</strong></div>
+              <div class="line"><span>TP2</span><strong class="price">本命利確候補</strong></div>
+              <div class="line"><span>TP3</span><strong>伸長候補</strong></div>
+              <div class="line"><span>レビュー</span><strong>最終結果 / 最大到達 / 最大逆行</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="premium-divider"></div>
+
+    <section id="concept" class="section">
+      <div class="wrap">
+        <div class="section-title reveal">
+          <h2>勝ち負けを分けるのは、エントリー後の判断。</h2>
+          <p class="sub">
+            エントリーはできても、利確・損切り・建値移動・ロット管理で崩れる。
+            EXIT NAVIは、まさにその「出口判断」を補助するために設計しています。
+          </p>
+        </div>
+        <div class="cards reveal">
+          <div class="card">
+            <h3>参考SLを自動表示</h3>
+            <p>エントリー後、TP方向に対してどこを割る・抜けるとシナリオが崩れやすいかを参考SLとして表示します。</p>
+          </div>
+          <div class="card">
+            <h3>TP1 / TP2 / TP3</h3>
+            <p>TP1は近い利確候補、TP2は根拠が重なりやすい本命候補、TP3は伸長候補として表示します。</p>
+          </div>
+          <div class="card">
+            <h3>決済後レビュー</h3>
+            <p>最終結果、最大到達、最大逆行、参考SL距離をpipsで振り返り、次のトレード改善につなげます。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="premium-divider"></div>
+
+    <section id="features" class="section">
+      <div class="wrap">
+        <div class="section-title reveal">
+          <h2>EXIT NAVIの主な機能</h2>
+          <p class="sub">高額商品として見せられるよう、パネルの見た目・情報量・操作性を絞り込んでいます。</p>
+        </div>
+        <div class="feature-list reveal">
+          <div class="feature"><b>参考SL/TP表示</b><br>ポジション保有後に参考SL、TP1、TP2、TP3をチャート上に表示。</div>
+          <div class="feature"><b>TP2重視設計</b><br>フィボナッチ、ATR、水平線などの根拠が重なる本命位置をTP2として重視。</div>
+          <div class="feature"><b>TP3常時表示</b><br>遠くても、エントリー時点からの伸長候補としてTP3を表示。</div>
+          <div class="feature"><b>ロット圧力チェック</b><br>ロット増加や重くなりすぎたポジションを視覚的に確認。</div>
+          <div class="feature"><b>pipsレビュー</b><br>決済後に最終結果、最大到達、最大逆行、参考SL距離をpipsで表示。</div>
+          <div class="feature"><b>高級感あるパネル</b><br>Blue / Red / Green / GoldのLuxury配色に対応。</div>
+        </div>
+      </div>
+    </section>
+<section id="style" class="section">
+      <div class="wrap">
+        <div class="section-title reveal">
+          <h2>3つのトレードスタイルに対応</h2>
+          <p class="sub">ユーザーが触る項目は必要最小限。Scalping / Day / Swingを切り替えるだけで使えます。</p>
+        </div>
+        <table class="compare reveal luxury-sweep">
+          <tr>
+            <th>Style</th>
+            <th>想定</th>
+            <th>使い方</th>
+          </tr>
+          <tr>
+            <td><strong>Scalping</strong></td>
+            <td>短期売買。秒〜分単位の値動きも想定。</td>
+            <td>TP1で素早く逃げる、TP2で標準利確、TP3で伸長確認。</td>
+          </tr>
+          <tr>
+            <td><strong>Day</strong></td>
+            <td>標準設定。迷ったらまずDay。</td>
+            <td>日中の値動きに対して、バランスよく出口を管理。</td>
+          </tr>
+          <tr>
+            <td><strong>Swing</strong></td>
+            <td>H1基準の短中期スイング。</td>
+            <td>構造的な否定位置をSLに、TP2を本命利確候補として確認。</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-title reveal">
+          <h2>使い方はシンプル</h2>
+          <p class="sub">複雑な設定を覚える必要はありません。ポジション保有後、パネルを見るだけで出口判断の材料を整理できます。</p>
+        </div>
+        <div class="flow reveal">
+          <div class="flow-item"><div><strong>チャートにEXIT NAVIを適用</strong><br><span class="sub">MT5のIndicatorsフォルダへEX5を入れ、チャートへ適用します。</span></div></div>
+          <div class="flow-item"><div><strong>Trade Styleを選択</strong><br><span class="sub">Scalping / Day / Swingからトレードスタイルを選びます。</span></div></div>
+          <div class="flow-item"><div><strong>ポジション保有後に参考SL/TPを確認</strong><br><span class="sub">参考SL、TP1、TP2、TP3、ロット圧力を確認します。</span></div></div>
+          <div class="flow-item"><div><strong>決済後レビューで改善</strong><br><span class="sub">最終結果・最大到達・最大逆行をpipsで確認し、次のトレードへ活かします。</span></div></div>
+        </div>
+      </div>
+    </section>
+    <div class="premium-divider"></div>
+
+    <section id="package" class="section">
+      <div class="wrap">
+        <div class="section-title reveal">
+          <h2>商品セット内容</h2>
+          <p class="sub">購入後すぐに使えるよう、導入手順とマニュアルを同梱しています。</p>
+        </div>
+        <table class="compare reveal luxury-sweep">
+          <tr><th>内容</th><th>詳細</th></tr>
+          <tr><td>EXIT NAVI.ex5</td><td>MT5用インジケーターファイルです。</td></tr>
+          <tr><td>導入手順.html</td><td>MT5への設置手順を分かりやすく解説。</td></tr>
+          <tr><td>操作マニュアル.html</td><td>パネル、SL/TP、レビュー、ボタンの見方を解説。</td></tr>
+          <tr><td>トレードスタイル別ガイド.html</td><td>Scalping / Day / Swingの使い分けを解説。</td></tr>
+          <tr><td>FAQ.html</td><td>購入者が迷いやすいポイントをまとめています。</td></tr>
+          <tr><td>重要事項・再配布禁止.html</td><td>使用上の注意、再配布禁止事項を記載。</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="cta reveal luxury-sweep">
+          <div class="kicker">GOGOJUNGLE PRODUCT PAGE</div>
+          <h2>出口判断を、感覚だけで終わらせない。</h2>
+          <p class="lead" style="margin-left:auto;margin-right:auto;">
+            EXIT NAVIは、エントリー後の迷いを整理するための出口管理インジケーターです。
+            参考SL/TP、ロット圧力、決済後レビューを使い、次のトレード改善につなげてください。
+          </p>
+          <div class="hero-actions" style="justify-content:center;">
+            <a class="btn" href="https://www.gogojungle.co.jp/tools/indicators/80170?utm_source=share" target="_blank" rel="noopener">GogoJungleで購入ページを見る</a>
+          </div>
+          <p class="note">
+            本インジケーターは売買判断を補助するツールです。注文・決済を自動で行うEAではありません。
+            最終的な売買判断はご自身で行ってください。
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    EXIT NAVI / MT5 Exit Management Indicator
+  </footer>
+
+<script>
+(function(){
+  const targets = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .luxury-sweep');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.16,
+    rootMargin: '0px 0px -7% 0px'
+  });
+
+  targets.forEach((el) => observer.observe(el));
+
+  const groups = document.querySelectorAll('.cards, .feature-list, .flow');
+  groups.forEach((group) => {
+    Array.from(group.children).forEach((child, index) => {
+      child.classList.add('reveal');
+      child.style.transitionDelay = Math.min(index * 90, 360) + 'ms';
+      observer.observe(child);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
